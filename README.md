@@ -96,6 +96,80 @@ curl "https://your-domain.vercel.app/api/v1/search?q=optimus"
 curl "https://your-domain.vercel.app/api/v1/stats"
 ```
 
+## 🔍 JSON Parsing with jq
+
+Here are useful `jq` commands for parsing API responses:
+
+### Basic Parsing
+```bash
+# Pretty print full response
+curl -s "https://your-domain.vercel.app/api/v1/random?count=3" | jq .
+
+# Extract just the names array
+curl -s "https://your-domain.vercel.app/api/v1/random?count=3" | jq '.data.names'
+
+# Get individual names (one per line)
+curl -s "https://your-domain.vercel.app/api/v1/random?count=3" | jq '.data.names[]'
+```
+
+### Advanced Parsing
+```bash
+# Create custom output format
+curl -s "https://your-domain.vercel.app/api/v1/random?count=5" | jq '{status, names: .data.names, count: .data.total}'
+
+# Get just the status
+curl -s "https://your-domain.vercel.app/api/v1/random?count=3" | jq -r '.status'
+
+# Count the names
+curl -s "https://your-domain.vercel.app/api/v1/random?count=10" | jq '.data.names | length'
+
+# Get first name only
+curl -s "https://your-domain.vercel.app/api/v1/random?count=5" | jq -r '.data.names[0]'
+
+# Format as CSV
+curl -s "https://your-domain.vercel.app/api/v1/random?count=5" | jq -r '.data.names | join(",")'
+```
+
+### Search & Stats Examples
+```bash
+# Parse search results
+curl -s "https://your-domain.vercel.app/api/v1/search?q=optimus" | jq '{query: .data.query, found: .data.total, names: .data.names}'
+
+# Get API statistics
+curl -s "https://your-domain.vercel.app/api/v1/stats" | jq '{total_names: .data.totalNames, api_version: .data.apiVersion}'
+
+# Extract plain text names from search
+curl -s "https://your-domain.vercel.app/api/v1/search?q=prime" | jq -r '.data.names[]'
+```
+
+### Example Responses
+
+**Random Names:**
+```json
+{
+  "status": "SUCCESS",
+  "data": {
+    "names": ["Motormaster", "Smokescreen", "Battletrap"],
+    "total": 3
+  },
+  "message": "Retrieved 3 random transformer names",
+  "timestamp": "2025-08-30T22:57:16.232Z"
+}
+```
+
+**Search Results:**
+```json
+{
+  "status": "SUCCESS",
+  "data": {
+    "names": ["Optimus Prime"],
+    "total": 1,
+    "query": "optimus"
+  },
+  "message": "Found 1 transformer names matching \"optimus\""
+}
+```
+
 ## 🧩 Architecture
 
 - **Serverless Functions**: Each API route is a separate serverless function
